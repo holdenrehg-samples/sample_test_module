@@ -1,0 +1,71 @@
+version: '3.3'
+
+services:
+  # Web Application Service Definition
+  # --------
+  #
+  # All of the information needed to start up an odoo web
+  # application container.
+  web:
+    image: odoo:12.0
+    depends_on:
+        - db
+
+    # Port Mapping
+    # --------
+    #
+    # Here we are mapping a port on the host machine (on the left)
+    # to a port inside of the container (on the right.) The default
+    # port on Odoo is 8069, so Odoo is running on that port inside
+    # of the container. But we are going to access it locally on
+    # our machine from localhost:9000.
+    ports:
+      - 9000:8069
+
+    # Data Volumes
+    # --------
+    #
+    # This defines files that we are mapping from the host machine
+    # into the container.
+    #
+    # Right now, we are using it to map a configuration file into
+    # the container and any extra odoo modules.
+    volumes:
+      - ./odoo.conf:/etc/odoo/odoo.conf
+      - ./test_module:/mnt/extra-addons/test_module
+
+    # Odoo Environment Variables
+    # --------
+    #
+    # The odoo image uses a few different environment
+    # variables when running to connect to the postgres
+    # database.
+    #
+    # Make sure that they are the same as the database user
+    # defined in the db container environment variables.
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo
+
+  # Database Container Service Definition
+  # --------
+  #
+  # All of the information needed to start up a postgresql
+  # container.
+  db:
+    image: postgres:10
+
+    # Database Environment Variables
+    # --------
+    #
+    # The postgresql image uses a few different environment
+    # variables when running to create the database. Set the
+    # username and password of the database user here.
+    #
+    # Make sure that they are the same as the database user
+    # defined in the web container environment variables.
+    environment:
+      - POSTGRES_PASSWORD=odoo
+      - POSTGRES_USER=odoo
+      - POSTGRES_DB=postgres  # Leave this set to postgres
